@@ -1,0 +1,73 @@
+---
+title: "Final"
+author: "YuanZhang, JutingJiang"
+date: "May 16, 2019"
+output: pdf_document
+---
+
+```{r}
+library(neuralnet)
+```
+```{r}
+#Neural network Training Data
+data <- read.csv(file="myX.csv",header=T, stringsAsFactors = T)
+#Neural network Prediction with given data
+t.data <- read.csv(file="myXtest.csv",header=T, stringsAsFactors = T)
+```
+```{r}
+YY <- read.csv(file="myY.csv",header=T)
+data$Y=YY$travel_time
+```
+
+
+```{r}
+normalize <- function(x){
+  return((x-min(x))/(max(x)-min(x)))
+}
+data_norm <- as.data.frame(lapply(data,normalize))
+```
+```{r}
+data_norm[,6:105] <- data[,6:105] 
+length(data_norm[,1])
+data_norm[is.na(data_norm)] <- 0
+```
+
+```{r}
+Predic <- numeric(0)
+samples <- sample(1:length(data_norm[,1]),10000,replace = F)
+
+D_test <-  data_norm[samples[1:2000],]
+D_train <- data_norm[samples[2001:10000],]
+
+#Test of training model
+data_model <- neuralnet(Y~., data=D_train,hidden=4)
+model_result <- compute(data_model,D_test[1:105])
+P.Y <- model_result$net.result
+cor(P.Y,D_test$Y)
+  
+#prediction by the given test data
+t.model_result <- compute(data_model,t.data[1:105])
+Predic <- t.model_result$net.result
+```
+
+##Save the prediciton
+```{r}
+write.csv(Predic, file="FinalPrediction.csv",row.names = F)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
